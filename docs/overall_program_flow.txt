@@ -1,0 +1,24 @@
+1. We download the phased data for each chromosome for individuals from the 1000 genome project.
+    We should have 22 VCF.gz files with this data
+2. We extract the individuals for the populations of interest listed in the SampleIDS folder from these VCF files
+    We get 22 recoded .VCF files at this time.
+3. We split the individuals as _1 and _2, and we create the allele and homologous files for each recoded vcf file.
+    we get 22 split homologous.vcf and allele_vcf.txt files.
+4. We are creating a training set which contains admixed individuals created by randomly combining the pure chromosomes
+    AND the pure individuals as a homologous and allele_vcf.txt files
+    We should have 22 training set files.
+5. We then create a test set which ONLY contains admixed individuals created by randomly combining the pure chromosomes.
+    We should have 22 test sets of ALLELE_vcf.txt and true_populations.csv files.
+6. At this point, we need to vcftools-merge the training set VCF files into one VCF file, which can be fed to admixture
+    to create a single .Q file across all the 22 chromosomes for the individuals.
+    We ALSO need to create a .Q file for each chromosome vcf file too.
+    So we should have a total of 22+1 Q files (1 combined, and 22 individual chr ones)
+7. The combined AND the individual chromosome .Q file is passed as the all_admix_filename and chrom_admix_filename to test_ancestry.sh
+
+
+Ultimately, the expectation will be to run the 22 admixed VCF files for the individuals of interest through STRUCTUREpainter,
+and compare the painting done by the program with the results that we "know" because we created the admixture ourselves.
+STRUCTUREPainter does not expect the knowledge of the "pure ancestors".
+
+The reason we are sticking with only two ancestors at a time and one "mixed" ancestor, is because STRUCTUREPainter can only
+handle 2 painted colors at this time.

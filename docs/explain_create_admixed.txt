@@ -1,0 +1,61 @@
+Difference between create_admixed_chromosomes.py and generate_test_set.py
+
+1. VCF file from create admixed has 310 individuals (columns) in the vcf file.
+   VCF file from generate test has 10 individuals (columns) in the vcf file
+2. create admixed python script is meant JUST to test admixture. It generates a "training" set of data
+   with 10 admixture individuals and 300 pure individuals. This training data set (vcf file) is fed into
+   admixture (by create_all_admixed_chromosomes.sh) and the output of admixture should reflect the fact that
+   the data has 10 admixed and 300 pure individuals. Thus, verifying that admixture is working fine.
+   On the other hand, generate test will just create 10 (or ALL if -1 is specified) admixed individuals
+   which will be processed by STRUCTUREpainter and admixture, so they can be compared, and we can verify
+   STRUCTUREpainter is working as desired.
+
+  --------------
+Explanation of create_admixed_chromosome.py
+
+Create $NUM_RECOMBINATION ranges. 
+start_list      stop_list     
+00              1000
+1000            3000
+3000            3500
+...
+...
+7500            9999
+
+j = 0 to 1
+    i = 0,2 (when j=0)  and i = 1,3 (when j=1)
+        (when j=0, we are copying from the population column N12345_0 and j=1, we are copying from pop column N12345_1
+        test[start[i]:stop[i]] = allele.vcf file - ref_ids population column - from [line[start[i]]:line[stop[i]]]
+        true[start[i]:stop[i]] = j (which it 0 or 1)
+        
+        
+The output files are three files
+    1. homologous VCF files recreated with the populations as 1st 10 columns admixed, next 300 columns pure
+    2. allele files recreated with the populations as 1st 10 columns admixed, next 300 columns pure
+    3. Ancestry proportions file, with 1st 10 entires for admixed proportions and next 300 entries as pure
+    
+10 and 300 are input arguments to the python script - and so are the two "pure populations"
+python create_admixed_chromosomes.py --num_admixed_chromosomes 10 --num_anchor 300 --source_pops CEU YRI
+
+admixtures gives a proportion a particular individual is for two ancestries.
+it takes a vcf files (actually bed file)
+and (if input k = 2), then assumes the individuals in the bed are admixed from 2 pure ancestries
+and assigns each individual a proportion for each of the 2 ancestries in the .Q file such that they add to 1.0
+
+In this case, if you pass a file with ONE pure ancestry individuals only, then admixture will create
+a .Q file with most columns being (close to 1, close to 0), or in other words, irrespective of k ....
+only one column will be close to (1) and all other columns will be close to (0)
+
+If you pass (k = 3), then admixture will assume three pure ancestries, and assign the proportion for
+each individual in the .Q file such that they add to 1.0
+---------------
+
+On the other hand, structure-painter does something similar, except it may be providing results by
+a SNIP across all individuals. The current theory to be verified is that
+StucturePainter looks at one SNIP (one row in the VCF file) across all the individuals, makes a
+determination that the SNIP at THAT position should be a 0 or 1. And once it has made that determination,
+it scans all the individuals for that SNIP that do match and assign them the color "red" and the others
+the color "blue".
+
+So, with that thought, if you pass a file with ALL pure individuals from ONE population to StructurePainter,
+it would paint the result "all blue" or "all red".
